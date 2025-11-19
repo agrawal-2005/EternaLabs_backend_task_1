@@ -17,3 +17,8 @@ if (!REDIS_TOKEN) {
 
 export const CACHE_KEY = 'tokens:snapshot';
 export const TTL = Number(process.env.TTL_SEC || 30);
+
+export const DEX = {
+  dexscreener: "https://api.dexscreener.com/latest/dex/search?q=",
+  jupiter: "https://lite-api.jup.ag/tokens/v2/search?query=",
+};
