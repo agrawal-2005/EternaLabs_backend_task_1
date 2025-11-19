@@ -13,8 +13,8 @@ The system is engineered to handle **rate-limited APIs**, **real-time UI consump
 
 | Deliverable                                       | Status      | Link                       |
 | ------------------------------------------------- | ----------- | -------------------------- |
-| **GitHub Repository (Clean Commits)** | ✅ Completed | *(Your Repo URL)* |
-| **Public Deployment (Render / Railway / Fly.io)** | ✅ Completed     | *(Add URL Here)* |
+| **GitHub Repository (Clean Commits)** | ✅ Completed | [GitHub_LINK](https://github.com/agrawal-2005/EternaLabs_backend_task_1.git) |
+| **Public Deployment (Render / Railway / Fly.io)** | ✅ Completed     | [LIVE_LINK](https://meme-coin-aggregator-j4qi.onrender.com/tokens) |
 | **Documentation (README)** | ✅ Included  | This file                  |
 | **Video Demo (1–2 minutes)** | ✅ Completed | *(YouTube Link Here)* |
 | **Postman/Insomnia Collection** | ✅ Completed  | [Download postman_collection.json](./postman_collection.json) |
