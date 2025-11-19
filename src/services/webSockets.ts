@@ -1,32 +1,30 @@
-import "dotenv/config";
-import { Server } from "socket.io";
-import { getKey, setKey } from "./cache";
-import { POLL_INTERVAL } from "../config";
+import { Server as SocketIOServer } from 'socket.io';
+import { Server as HTTPServer } from 'http';
+import { getKey } from "./cache";
+import { CACHE_KEY } from "../config";
 
-export function attachWs(httpServer: any) {
-  const io = new Server(httpServer, {
+let io: SocketIOServer;
+
+export const attachWs = (httpServer: HTTPServer) => {
+  io = new SocketIOServer(httpServer, {
     cors: { origin: "*" },
   });
 
-  io.on("connection", (socket) => {
-    // console.log("client connected");
+  io.on("connection", async (socket) => {
+    console.log(`Client connected: ${socket.id}`);
     socket.join("tokens");
-  });
 
-  /**
-   * Upstash Redis Pub/Sub
-   * subscribe(channel, callback)
-   */
-
-  //poll reads every 1 second
-  setInterval(async () => {
-    const diffs = await getKey("tokens:diffs");
-    if(diffs && diffs.length > 0){
-        io.to("tokens").emit("upd", diffs);
-
-        await setKey("tokens:diffs", []);
+    const snap = await getKey(CACHE_KEY); 
+    if (snap && snap.list) {
+        socket.emit('initialData', snap.list);
     }
-  }, POLL_INTERVAL)
-
+  });
   return io;
-}
+};
+
+export const broadcastUpdates = (diffs: any[]) => {
+    if (io && diffs.length > 0) {
+        console.log(`Broadcasting ${diffs.length} updates to clients...`);
+        io.to("tokens").emit('upd', diffs);
+    }
+};

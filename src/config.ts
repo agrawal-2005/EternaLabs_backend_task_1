@@ -20,7 +20,8 @@ export const TTL = Number(process.env.TTL_SEC || 30);
 
 export const DEX = {
   dexscreener: "https://api.dexscreener.com/latest/dex/search?q=",
-  geckoterminal: "https://api.geckoterminal.com/api/v2/networks/solana/pools", 
+  // jupiter: "https://lite-api.jup.ag/tokens/v2/search?query=", 
+  geckoterminal: "https://api.geckoterminal.com/api/v2/networks", 
 };
 
 export const POLL_INTERVAL = Number(process.env.POLL_INTERVAL) || 10000;

@@ -1,12 +1,23 @@
 import { POLL_INTERVAL } from "./config";
 import { refresh } from "./services/agg";
+import { broadcastUpdates } from "./services/webSockets";
 
 export function startScheduler() {
-    setInterval(async () => {
+    console.log("Scheduler started. Running initial fetch...");
+    
+    const runJob = async () => {
         try {
-            await refresh();
+            const diffs = await refresh();
+            // Broadcast the changes returned by refresh
+            if (diffs && diffs.length > 0) {
+                broadcastUpdates(diffs);
+            }
         } catch (err) {
             console.error("Scheduler refresh failed:", err);
         }
-    }, POLL_INTERVAL);
+    };
+
+    runJob();
+
+    setInterval(runJob, POLL_INTERVAL);
 }

@@ -8,35 +8,57 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 20, 100);
-    const sort = String(req.query.sort || "volume");
+    const metric = String(req.query.sort || "volume"); 
     const order = String(req.query.order || "desc");
     const period = String(req.query.period || "24h");
     const cursor = String(req.query.cursor || "");
 
     const snap = await getKey(CACHE_KEY);
-    const list = snap?.list || [];
+    console.log(`API Debug - Cache Hit? ${!!snap}, Item Count: ${snap?.list?.length}`);
 
+    const list = snap?.list || [];
     let filtered = [...list];
 
-    // period filter
-    if (period === "1h") {
-      filtered = filtered.filter((t) => t.price_1hr_change !== undefined);
+    // FILTERING
+    const minLiq = parseFloat(req.query.min_liq as string) || 0;
+    const minVol = parseFloat(req.query.min_vol as string) || 0;
+
+    if (minLiq > 0) {
+        filtered = filtered.filter((t: any) => (t.liquidity_sol || 0) >= minLiq);
+    }
+    if (minVol > 0) {
+        filtered = filtered.filter((t: any) => (t.volume_sol || 0) >= minVol);
     }
 
-    // sorting
+    // DYNAMIC Sorting Implementation
     filtered.sort((a: any, b: any) => {
-      if (sort === "volume") {
-        return (b.volume_sol || 0) - (a.volume_sol || 0);
+      let sortField: string;
+
+      if (metric === "volume") {
+        sortField = "volume_sol";
+      } else if (metric === "market_cap") {
+        sortField = "market_cap_sol";
+      } else if (metric === "price_change") {
+        if (period === "1h") {
+          sortField = "price_1hr_change";
+        } else if (period === "7d") {
+          sortField = "price_7d_change";
+        } else {
+          sortField = "price_24hr_change"; 
+        }
+      } else {
+        sortField = `${metric}_sol` in a ? `${metric}_sol` : "volume_sol";
       }
-      if (sort === "price_change") {
-        return (b.price_1hr_change || 0) - (a.price_1hr_change || 0);
-      }
-      return (b.market_cap_sol || 0) - (a.market_cap_sol || 0);
+
+      const valA = a[sortField] || 0;
+      const valB = b[sortField] || 0;
+      
+      return (valB - valA);
     });
 
     if (order === "asc") filtered.reverse();
 
-    // cursor pagination
+    // Cursor Pagination
     const start = decodeCursor(cursor) || 0;
     const items = filtered.slice(start, start + limit);
 

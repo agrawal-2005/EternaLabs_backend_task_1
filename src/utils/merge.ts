@@ -26,7 +26,7 @@ export function mergeList(lists: any[][]) {
       if(!id) continue;
 
       if(!mpp.has(id)){
-        mpp.set(id, {...t, sources: t.sources ? [...t.sources] : []});
+        mpp.set(id, {...t, sources: t.sources ? [...t.sources] : []}); 
         continue;
       }
 

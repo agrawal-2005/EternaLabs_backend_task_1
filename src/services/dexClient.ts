@@ -19,12 +19,35 @@ export async function fetchDexScreener(query:string) {
     }
 }
 
-export async function fetchGeckoTerminal(query:string) {
-    const url = `${DEX.geckoterminal}?page=1&include=base_token,quote_token&sort=h24_volume_usd_desc`;
+// export async function fetchJupiter(query:string) {
+//     if (!DEX.jupiter) {
+//         console.error("Jupiter API URL not defined in config");
+//         return { data: [] };
+//     }
+//     const url = `${DEX.jupiter}${encodeURIComponent(query)}`;
+//     try {
+//         return await fetchJson(url);
+//     } catch (err) {
+//         console.log("Jupiter fetch failed:", err);
+//         return { data: [] }
+//     }
+// }
+
+export async function fetchGeckoTerminal(
+    network: string, 
+    page: number = 1, 
+    sort: string = 'h24_volume_usd_desc'
+) {
+    // Handle common aliases (e.g., 'sol' to 'solana')
+    const chain = network.toLowerCase() === 'sol' ? 'solana' : network;
+
+    // Constructs the dynamic URL using network, page, and sort parameters
+    const url = `${DEX.geckoterminal}/${chain}/pools?page=${page}&include=base_token,quote_token&sort=${sort}`;
+    
     try {
         return await fetchJson(url);
     } catch (err) {
-        console.log("GeckoTerminal fetch failed:", err);
+        console.log(`GeckoTerminal fetch failed for ${chain} (Page ${page}):`, err);
         return { data: [], included: [] }
     }
 }
