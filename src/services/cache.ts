@@ -1,21 +1,32 @@
-import Redis from "ioredis";
-import { REDIS_URL } from '../config';
+import { Redis } from "@upstash/redis";
+import { REDIS_URL, REDIS_TOKEN } from "../config";
 
-const client = new Redis(REDIS_URL);
+export const client = new Redis({
+  url: REDIS_URL,
+  token: REDIS_TOKEN,
+});
 
-export async function getKey(key:string): Promise<any | null> {
-    const val = await client.get(key);
-    if(!val) return null;
+export async function getKey(key: string): Promise<any | null> {
+  const val = await client.get<string>(key);
+  if (!val) return null;
 
-    try{
-        return JSON.parse(val);
-    } catch{
-        return null;
-    }
+  try {
+    return JSON.parse(val);
+  } catch {
+    return null;
+  }
 }
 
-export async function setKey(key:string, value: any): Promise<void> {
-    await client.set(key, JSON.stringify(value));
+export async function setKey(key: string, value: any): Promise<void> {
+  await client.set(key, JSON.stringify(value));
 }
 
-export default client
+export const pub = new Redis({
+  url: REDIS_URL,
+  token: REDIS_TOKEN,
+});
+
+export const sub = new Redis({
+  url: REDIS_URL,
+  token: REDIS_TOKEN,
+});
