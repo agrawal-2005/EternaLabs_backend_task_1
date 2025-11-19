@@ -1,11 +1,11 @@
-import { CACHE_KEY } from "../config";
+import { CACHE_KEY, QUERY_DEXSCREENER, QUERY_GTNETWORK } from "../config";
 import { mergeList } from "../utils/merge";
 import { getKey, setKey } from "./cache";
 import { fetchDexScreener, fetchGeckoTerminal } from "./dexClient";
 
 export async function refresh(
-  dsQuery: string = "sol", 
-  gtNetwork: string = "solana",     // Assuming the default is Solana if we are using GT
+  dsQuery: string = QUERY_DEXSCREENER, 
+  gtNetwork: string = QUERY_GTNETWORK,
   gtPage: number = 1, 
   gtSort: string = "h24_volume_usd_desc"
 ) {

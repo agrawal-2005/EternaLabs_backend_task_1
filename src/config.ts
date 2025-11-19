@@ -16,10 +16,13 @@ if (!REDIS_TOKEN) {
 }
 
 export const CACHE_KEY = 'tokens:snapshot';
-export const TTL = Number(process.env.TTL_SEC || 30);
+export const TTL = Number(process.env.CACHE_TTL || 30);
 
 export const DEX = {
   dexscreener: "https://api.dexscreener.com/latest/dex/search?q=",
   // jupiter: "https://lite-api.jup.ag/tokens/v2/search?query=", 
   geckoterminal: "https://api.geckoterminal.com/api/v2/networks", 
 };
+
+export const QUERY_DEXSCREENER = process.env.QUERY_DEXSCREENER || "sol";
+export const QUERY_GTNETWORK = process.env.QUERY_GTNETWORK || "sol";
