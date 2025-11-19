@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Server } from "socket.io";
 import { getKey, setKey } from "./cache";
 import { POLL_INTERVAL } from "../config";

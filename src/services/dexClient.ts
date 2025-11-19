@@ -9,7 +9,7 @@ async function fetchJson(url:string): Promise<any> {
     }, 4);
 }
 
-export async function fetchDexScreener(query = "") {
+export async function fetchDexScreener(query:string) {
     const url = `${DEX.dexscreener}${encodeURIComponent(query)}`;
     try {
         return await fetchJson(url);
@@ -19,12 +19,12 @@ export async function fetchDexScreener(query = "") {
     }
 }
 
-export async function fetchJupiter(query = "") {
-    const url = `${DEX.jupiter}${encodeURIComponent(query)}`;
+export async function fetchGeckoTerminal(query:string) {
+    const url = `${DEX.geckoterminal}?page=1&include=base_token,quote_token&sort=h24_volume_usd_desc`;
     try {
         return await fetchJson(url);
     } catch (err) {
-        console.log("Jupiter fetch failed:", err);
-        return { data: [] }
+        console.log("GeckoTerminal fetch failed:", err);
+        return { data: [], included: [] }
     }
 }

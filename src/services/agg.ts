@@ -1,79 +1,94 @@
 import { CACHE_KEY } from "../config";
 import { mergeList } from "../utils/merge";
 import { getKey, setKey } from "./cache";
-import { fetchDexScreener, fetchJupiter } from "./dexClient";
+import { fetchDexScreener, fetchGeckoTerminal } from "./dexClient";
 
-export async function refresh(){
-    console.log("refresh() fetching raw data....");
+export async function refresh() {
+  console.log("refresh() fetching raw data....");
 
-    const dsRaw = await fetchDexScreener("sol");
-    const jpRaw = await fetchJupiter("sol");
+  const dsRaw = await fetchDexScreener("sol").catch(() => null);
+  const gtRaw = await fetchGeckoTerminal("sol").catch(() => null); 
 
-    console.log("Dex Screener raw count:", dsRaw?.pairs?.length);
-    console.log("Jupiter raw count:", jpRaw?.data?.length);
+  const dsArr = Array.isArray(dsRaw?.pairs) ? dsRaw.pairs : [];
+  const gtArr = Array.isArray(gtRaw?.data) ? gtRaw.data : []; 
+  const gtIncluded = Array.isArray(gtRaw?.included) ? gtRaw.included : []; 
 
-    // normalize DexScreener data
-    const dsList = (dsRaw?.pairs || []).map((p: any) => ({
-        token_address: p.baseToken?.address,
-        token_name: p.baseToken?.name,
-        token_ticker: p.baseToken?.symbol,
-        price_sol: Number(p.price) || 0,
-        volume_sol: Number(p.volume?.h24 || 0),
-        liquidity_sol: Number(p.liquidity?.usd || 0),
-        market_cap_sol: Number(p.marketCap || 0),
-        transaction_count: Number(p.txns?.h24 || 0),
-        sources: ["dexscreener"]
-    }));
+  console.log("Dex Screener raw count:", dsArr.length);
+  console.log("Gecko Terminal raw pool count:", gtArr.length);
 
-    // normalize Jupiter data
-    const jpList = (jpRaw?.data || []).map((t: any) => ({
-        token_address: t.address,
-        token_name: t.name,
-        token_ticker: t.symbol,
-        price_sol: Number(t.price) || 0,
-        volume_sol: Number(t.volumeUsd || 0),
-        liquidity_sol: Number(t.liquidityUsd || 0),
-        market_cap_sol: Number(t.marketCap || 0),
-        transaction_count: 0,
-        sources: ["jupiter"]
-    }));
+  const getGtTokenMeta = (type: string, id: string) => {
+    return gtIncluded.find((i: any) => i.type === type && i.id === id)?.attributes;
+  };
 
-    console.log("Normalised Lists: ", {
-        ds: dsList.length,
-        jp: jpList.length
-    });
+  const dsList = dsArr.map((p: any) => ({
+    token_address: p.baseToken?.address,
+    token_name: p.baseToken?.name,
+    token_ticker: p.baseToken?.symbol,
+    price_sol: Number(p.price) || 0,
+    volume_sol: Number(p.volume?.h24 || 0),
+    liquidity_sol: Number(p.liquidity?.usd || 0),
+    market_cap_sol: Number(p.fdv || 0),
+    transaction_count: Number((p.txns?.h24?.buys || 0) + (p.txns?.h24?.sells || 0)),
+    price_1hr_change: Number(p.priceChange?.h1 || 0),
+    price_24hr_change: Number(p.priceChange?.h24 || 0),
+    price_7d_change: 0, 
 
-    // merge both (ds + jp) lists using mergeList
-    const merged = mergeList([dsList, jpList]);
-    // console.log("Merged tokens:", merged.length);
+    sources: ["dexscreener"]
+  }));
 
-    // old snapshot
-    const oldSnap = await getKey(CACHE_KEY);
-    const oldList = oldSnap?.list || [];
+  const gtList = gtArr.map((p: any) => {
+    const attr = p.attributes;
+    const baseTokenId = p.relationships?.base_token?.data?.id;
+    const meta = baseTokenId ? getGtTokenMeta('token', baseTokenId) : {};
+    
+    return {
+      token_address: meta?.address,
+      token_name: meta?.name,
+      token_ticker: meta?.symbol,
+      price_sol: Number(attr?.base_token_price_usd || 0), 
+      volume_sol: Number(attr?.volume_usd?.h24 || 0),
+      liquidity_sol: Number(attr?.reserve_in_usd || 0),
+      market_cap_sol: Number(meta?.market_cap_usd || 0),
+      transaction_count: Number(attr?.transactions?.h24 || 0),
+      
+      price_1hr_change: Number(attr?.price_change_percentage?.h1 || 0),
+      price_24hr_change: Number(attr?.price_change_percentage?.h24 || 0),
+      price_7d_change: Number(attr?.price_change_percentage?.h7 || 0), 
+      
+      sources: ["geckoterminal"]
+    }
+  }).filter((t: any) => t.token_address);
 
-    const new_Snap = {
-        ts: Date.now(),
-        list: merged
-    };
+  console.log("Normalised Lists:", {
+    ds: dsList.length,
+    gt: gtList.length,
+  });
 
-    // await setKey(CACHE_KEY, new_Snap);
+  const merged = mergeList([dsList, gtList]);
 
-    //compute difference and publish via pub/sub
+  const oldSnap = await getKey(CACHE_KEY);
+  const oldList = oldSnap?.list || [];
 
-    const diffs = merged.filter((new_Token: any) => {
-        const old = oldList.find((o: any) => o.token_address === new_Token.token_address);
-        if(!old) return true;
-        return(
-            old.price_sol !== new_Token.price_sol || old.volume_sol !== new_Token.volume_sol
-        );
-    });
+  const newSnap = {
+    ts: Date.now(),
+    list: merged,
+  };
 
-    // if(diffs.length > 0){
-    //     await pub.publish("tokens:diff", JSON.stringify(diffs));
-    // }
+  const diffs = merged.filter((n: any) => {
+    const o = oldList.find((x: any) => x.token_address === n.token_address);
+    if (!o) return true;
+    
+    return (
+      o.price_sol !== n.price_sol || 
+      o.volume_sol !== n.volume_sol ||
+      o.price_1hr_change !== n.price_1hr_change ||
+      o.price_24hr_change !== n.price_24hr_change ||
+      o.price_7d_change !== n.price_7d_change
+    );
+  });
 
-    await setKey(CACHE_KEY, new_Snap);
-    await setKey("tokens:diffs", diffs);
+  await setKey(CACHE_KEY, newSnap);
+  await setKey("tokens:diffs", diffs);
 
-    return merged;
+  return merged;
 }
