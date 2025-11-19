@@ -1,0 +1,92 @@
+{
+	"info": {
+		"_postman_id": "d3f7b3c1-5a8e-4c2d-9b7a-1f2e3d4c5b6a",
+		"name": "EternaLabs Backend Task 1",
+		"description": "Collection for testing the Real-time DEX Data Aggregation Service. Server is running on localhost:5251.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5251/health",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "5251",
+					"path": ["health"]
+				}
+			}
+		},
+		{
+			"name": "Get Tokens (Default - Sort Volume Desc)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5251/tokens",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "5251",
+					"path": ["tokens"]
+				}
+			}
+		},
+		{
+			"name": "Top Gainers (Sort 24h Change)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5251/tokens?sort=price_change&period=24h&order=desc",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "5251",
+					"path": ["tokens"],
+					"query": [
+						{ "key": "sort", "value": "price_change" },
+						{ "key": "period", "value": "24h" },
+						{ "key": "order", "value": "desc" }
+					]
+				}
+			}
+		},
+		{
+			"name": "Filter by Liquidity (>10k SOL)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5251/tokens?min_liq=10000",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "5251",
+					"path": ["tokens"],
+					"query": [
+						{ "key": "min_liq", "value": "10000" }
+					]
+				}
+			}
+		},
+		{
+			"name": "Pagination (Page 2)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5251/tokens?limit=5&cursor=NQ==",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "5251",
+					"path": ["tokens"],
+					"query": [
+						{ "key": "limit", "value": "5" },
+						{ "key": "cursor", "value": "NQ==" }
+					]
+				}
+			}
+		}
+	]
+}
