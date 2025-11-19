@@ -9,6 +9,7 @@ export function decodeCursor(s?: string): number {
   try {
     const dec = base64url.decode(s);
     const n = Number(dec);
+        // Ensure decoded cursor is a valid, non-negative integer
     return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
   } catch {
     return 0;

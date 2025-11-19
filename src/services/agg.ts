@@ -5,7 +5,7 @@ import { fetchDexScreener, fetchGeckoTerminal } from "./dexClient";
 
 export async function refresh(
   dsQuery: string = "sol", 
-  gtNetwork: string = "sol", 
+  gtNetwork: string = "solana",     // Assuming the default is Solana if we are using GT
   gtPage: number = 1, 
   gtSort: string = "h24_volume_usd_desc"
 ) {

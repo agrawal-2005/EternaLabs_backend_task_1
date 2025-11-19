@@ -3,6 +3,7 @@ import { retry } from "../utils/backoff";
 import { DEX } from "../config";
 
 async function fetchJson(url:string): Promise<any> {
+    // Uses the robust retry mechanism with exponential backoff for resilience
     return retry(async () => {
         const res = await axios.get(url, {timeout: 5000});
         return res.data;
@@ -14,7 +15,8 @@ export async function fetchDexScreener(query:string) {
     try {
         return await fetchJson(url);
     } catch (err) {
-        console.log("DexScreener fetch failed:", err);
+        // Log failure but return empty array to prevent aggregation crash
+        console.error("DexScreener fetch failed:", err);
         return { pairs: [] }
     }
 }
@@ -38,16 +40,23 @@ export async function fetchGeckoTerminal(
     page: number = 1, 
     sort: string = 'h24_volume_usd_desc'
 ) {
-    // Handle common aliases (e.g., 'sol' to 'solana')
+    // Ensures case consistency with the API's required chain ID (e.g., 'solana' instead of 'sol')
     const chain = network.toLowerCase() === 'sol' ? 'solana' : network;
+    
+    if (!DEX.geckoterminal) {
+        console.error("GeckoTerminal API URL is not defined in config.");
+        return { data: [], included: [] };
+    }
 
     // Constructs the dynamic URL using network, page, and sort parameters
+    // We are deliberately forcing specific includes for base token metadata
     const url = `${DEX.geckoterminal}/${chain}/pools?page=${page}&include=base_token,quote_token&sort=${sort}`;
     
     try {
         return await fetchJson(url);
     } catch (err) {
-        console.log(`GeckoTerminal fetch failed for ${chain} (Page ${page}):`, err);
+        // Log failure specific to the network and page requested
+        console.error(`GeckoTerminal fetch failed for ${chain} (Page ${page}):`, err);
         return { data: [], included: [] }
     }
 }

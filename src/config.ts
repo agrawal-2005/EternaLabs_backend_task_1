@@ -1,7 +1,7 @@
 export const PORT = Number(process.env.PORT) || 5251;
+export const POLL_INTERVAL = Number(process.env.POLL_INTERVAL) || 10000;
 
 export const REDIS_URL = process.env.REDIS_URL || '';
-
 if (!REDIS_URL) {
   console.warn(
     'REDIS_URL is missing. Set your Redis URL in .env.'
@@ -23,5 +23,3 @@ export const DEX = {
   // jupiter: "https://lite-api.jup.ag/tokens/v2/search?query=", 
   geckoterminal: "https://api.geckoterminal.com/api/v2/networks", 
 };
-
-export const POLL_INTERVAL = Number(process.env.POLL_INTERVAL) || 10000;
