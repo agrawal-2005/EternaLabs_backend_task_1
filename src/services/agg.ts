@@ -1,4 +1,6 @@
+import { CACHE_KEY } from "../config";
 import { mergeList } from "../utils/merge";
+import { getKey, pub, setKey } from "./cache";
 import { fetchDexScreener, fetchJupiter } from "./dexClient";
 
 export async function refresh(){
@@ -43,5 +45,30 @@ export async function refresh(){
 
     // merge both (ds + jp) lists using mergeList
     const merged = mergeList([dsList, jpList]);
-    console.log("Merged tokens:", merged.length);
+    // console.log("Merged tokens:", merged.length);
+
+    // old snapshot
+    const oldSnap = await getKey(CACHE_KEY);
+    const oldList = oldSnap?.list || [];
+
+    const new_Snap = {
+        ts: Date.now(),
+        list: merged
+    };
+
+    await setKey(CACHE_KEY, new_Snap);
+
+    //compute difference and publish via pub/sub
+
+    const diffs = merged.filter((new_Token: any) => {
+        const old = oldList.find((o: any) => o.token_address === new_Token.token_address);
+        if(!old) return true;
+        return(
+            old.price_sol !== new_Token.price_sol || old.volume_sol !== new_Token.volume_sol
+        );
+    });
+
+    if(diffs.length > 0){
+        await pub.publish("tokens:diff", JSON.stringify(diffs));
+    }
 }
