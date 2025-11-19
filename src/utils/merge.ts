@@ -1,22 +1,3 @@
-import base64url from 'base64url';
-
-export function encodeCursor(n: number): string {
-  return base64url.encode(String(n));
-}
-
-export function decodeCursor(s?: string): number {
-  if (!s) return 0;
-  try {
-    const dec = base64url.decode(s);
-    const n = Number(dec);
-        // Ensure decoded cursor is a valid, non-negative integer
-    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
-  } catch {
-    return 0;
-  }
-}
-
-
 export function mergeList(lists: any[][]) {
   const mpp = new Map<string, any>();
 
