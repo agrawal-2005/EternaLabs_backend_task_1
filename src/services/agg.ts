@@ -1,6 +1,6 @@
 import { CACHE_KEY } from "../config";
 import { mergeList } from "../utils/merge";
-import { getKey, pub, setKey } from "./cache";
+import { getKey, setKey } from "./cache";
 import { fetchDexScreener, fetchJupiter } from "./dexClient";
 
 export async function refresh(){
@@ -56,7 +56,7 @@ export async function refresh(){
         list: merged
     };
 
-    await setKey(CACHE_KEY, new_Snap);
+    // await setKey(CACHE_KEY, new_Snap);
 
     //compute difference and publish via pub/sub
 
@@ -68,7 +68,12 @@ export async function refresh(){
         );
     });
 
-    if(diffs.length > 0){
-        await pub.publish("tokens:diff", JSON.stringify(diffs));
-    }
+    // if(diffs.length > 0){
+    //     await pub.publish("tokens:diff", JSON.stringify(diffs));
+    // }
+
+    await setKey(CACHE_KEY, new_Snap);
+    await setKey("tokens:diffs", diffs);
+
+    return merged;
 }

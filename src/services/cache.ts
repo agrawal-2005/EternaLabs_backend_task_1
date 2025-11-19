@@ -20,15 +20,3 @@ export async function getKey(key: string): Promise<any | null> {
 export async function setKey(key: string, value: any): Promise<void> {
   await client.set(key, JSON.stringify(value));
 }
-
-//pub-sub model for real time updates
-
-export const pub = new Redis({
-  url: REDIS_URL,
-  token: REDIS_TOKEN,
-});
-
-export const sub = new Redis({
-  url: REDIS_URL,
-  token: REDIS_TOKEN,
-});
