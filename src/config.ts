@@ -22,3 +22,5 @@ export const DEX = {
   dexscreener: "https://api.dexscreener.com/latest/dex/search?q=",
   jupiter: "https://lite-api.jup.ag/tokens/v2/search?query=",
 };
+
+export const POLL_INTERVAL = Number(process.env.POLL_INTERVAL) || 10000;
