@@ -13,12 +13,12 @@ The system is engineered to handle **rate-limited APIs**, **real-time UI consump
 
 | Deliverable                                       | Status      | Link                       |
 | ------------------------------------------------- | ----------- | -------------------------- |
-| **GitHub Repository (Clean Commits)**             | ✅ Completed | *(Your Repo URL)*          |
-| **Public Deployment (Render / Railway / Fly.io)** | ✅ Completed     | *(Add URL Here)*           |
-| **Documentation (README)**                        | ✅ Included  | This file                  |
-| **Video Demo (1–2 minutes)**                      | ✅ Completed | *(YouTube Link Here)*      |
-| **Postman/Insomnia Collection**                   | ✔ Required  | *(Add collection to repo)* |
-| **10+ Unit/Integration Tests**                    | ✅ Completed  | `tests/*.test.ts`          |
+| **GitHub Repository (Clean Commits)** | ✅ Completed | *(Your Repo URL)* |
+| **Public Deployment (Render / Railway / Fly.io)** | ✅ Completed     | *(Add URL Here)* |
+| **Documentation (README)** | ✅ Included  | This file                  |
+| **Video Demo (1–2 minutes)** | ✅ Completed | *(YouTube Link Here)* |
+| **Postman/Insomnia Collection** | ✅ Completed  | [Download postman_collection.json](./postman_collection.json) |
+| **10+ Unit/Integration Tests** | ✅ Completed  | `tests/*.test.ts`          |
 
 ---
 
@@ -64,8 +64,8 @@ The system is engineered to handle **rate-limited APIs**, **real-time UI consump
 
 Fetches and merges data from:
 
-* **DexScreener**
-* **GeckoTerminal (Search API)**
+* **DexScreener** (Search API)
+* **GeckoTerminal** (Networks/Pools API)
 
 ### ✅ High-performance caching
 
@@ -82,9 +82,16 @@ Clients receive only deltas (`upd` event), not full lists → extremely efficien
 
 REST API:
 
-* `/tokens?sort=volume&limit=20&cursor=xyz`
+* `/tokens?sort=price_change&period=24h&limit=20&min_liq=1000`
 * Computes nextCursor for infinite scroll
 
+### ✅ Fault-tolerant API wrapper
+
+All external API calls use:
+
+* Exponential backoff
+* Retry
+* Proxy-bypass for restricted networks (where applicable)
 
 ### ✅ Clean modular codebase
 
@@ -110,6 +117,8 @@ Fully separated:
 │   ├── scheduler.ts
 │   ├── routes/
 │   │   └── tokens.ts
+│   ├── tests/
+│   │   └── api.test.ts
 │   ├── services/
 │   │   ├── agg.ts
 │   │   ├── dexClient.ts
@@ -117,11 +126,14 @@ Fully separated:
 │   │   └── webSockets.ts
 │   ├── utils/
 │   │   ├── backoff.ts
-│   │   └── merge.ts
-│   │   └── cursor.ts
+│   │   ├── merge.ts
+│   │   ├── cursor.ts
+│   │   └── types.ts
 ├── tests/
 │   └── api.test.ts
 ├── package.json
+├── jest.config.json
+├── postman_collection.json
 └── .env
 ```
 
@@ -211,7 +223,7 @@ GET /tokens?sort=price_change&period=1h&limit=5&min_liq=1000
       "token_name": "Solana",
       "price_sol": 148,
       "volume_sol": 120000,
-      "sources": ["dexscreener", "geckoterminal"]
+      "sources": ["dexscreener"]
     }
   ],
   "nextCursor": "MjA="
@@ -278,5 +290,5 @@ ab -n 100 -c 10 http://localhost:5251/tokens
 
 # 🙌 **Author**
 
-**Prashant Agrawal**
+**Prashant Agrawal** | 
 IIIT Allahabad
